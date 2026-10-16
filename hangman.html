@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Ahorcado</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/e87d10dd99.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- PANTALLA DE INICIO -->
+        <div id="pantalla_inicial">
+            <h2>Bienvenido al Juego del Ahorcado</h2>
+            <label for="in_user">Introduce tu nombre de Usuario: </label>
+            <input type="text" id="in_user">
+            <button id="btn_iniciar" class="btn-iniciales">Inicializar</button>
+        </div>
+
+        <!-- PANTALLA DE INGRESAR FRASE OCULTA -->
+        <div id="pantalla_frase_oculta">
+            <h2>Crea Tu Palabra/Frase Oculta</h2>
+            <label for="in_frase_oculta">Escribe Aquí: </label>
+            <div class="box_password">
+                <input type="password" id="in_frase_oculta">
+                <span class="fa-regular fa-eye-slash" id="ojo_cerrado"></span>
+                <span class="fa-regular fa-eye" id="ojo_abierto"></span>
+            </div>
+            <button id="btn_ocultar" class="btn-iniciales">Ocultar</button>
+        </div>
+
+        <!-- Juego en Si -->
+        <header>
+            <h1>El Ahorcado</h1>
+        </header>
+
+        <main>
+            <div id="box_hangman"><img src="imgs/fase1.png" alt="hangman" id="estado_del_ahorcado"></div>
+            <div id="box_palabra"> <!--AQUI VA LA FRASE A ADIVINAR--> </div>
+            <div id="box_inletra">
+                <label for="in_letra">Escribe tu letra: </label>
+                <input type="text" id="in_letra" size="1">
+            </div>
+        </main>
+
+        <!--ASIDE INFORMATIVO -->
+        <aside>
+            <div id="box_avisos"></div>
+            <table class="tabla_resultados">
+                <thead>
+                    <tr>
+                        <th>Letras Acertadas</th>
+                        <th>Letras Falladas</th>
+                        <th>Letras Restantes</th>
+                        <th>Intentos Restantes</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo_tabla">
+                </tbody>
+                <button id="btn_reiniciar" class="btn-iniciales">Reiniciar Juego</button>
+            </table>
+        </aside>
+    </div>
+
+    </div>
+
+
+    <script>
+        const AHORCADO = document.getElementById('estado_del_ahorcado');
+        const CARACTERES_PROHIBIDOS = `·!"#$%&'()*+,-./:;<=>?@[\\]^_{|}~§¶†‡•…‰′″‴※№±×÷≠≈≤≥∞√∑∏∫∂∆∇∝∈∉∩∪€$£¥₩₽₹₺₿¢←→↑↓↔↕⇐⇒⇑⇓⇔➜➝➞➤★☆♠♣♥♦●○■□▲△◆◇©®™℗℠\``;
+        const PANTALLA_NAME = document.getElementById('pantalla_inicial');
+        const INPUT_NAME = document.getElementById('in_user');
+        const BOTON_INICIALIZAR = document.getElementById('btn_iniciar');
+        const PANTALLA_FRASE_OCULTA = document.getElementById('pantalla_frase_oculta');
+        const INPUT_FRASE_OCULTA = document.getElementById('in_frase_oculta');
+        const BOTON_OCULTAR = document.getElementById('btn_ocultar');
+        const INPUT_LETRA = document.getElementById('in_letra');
+        const TABLA = document.getElementById('cuerpo_tabla');
+        const BOTON_REINICIAR = document.getElementById('btn_reiniciar');
+        const OJO_CERRADO = document.getElementById('ojo_cerrado');
+        const OJO_ABIERTO = document.getElementById('ojo_abierto');
+
+        let ver_contraseña = false;
+        let colec_span;
+        let todas_las_letras = '';
+        let usuario = '';
+        let frase_oculta = '';
+        let letras_encontradas = '';
+        let letras_falladas = '';
+        let num_encontradas = 0;
+        let num_falladas = 0;
+        let intentos_restantes = 6;
+        let espacios = 0;
+        let total_letras = 0;
+        let restantes = 0;
+
+        //FUNCIONES AUXILIARES
+        function ifCharProhibidos(texto) {
+            for (const char of texto.value) {
+                if (CARACTERES_PROHIBIDOS.includes(char)) {
+                    alert('ERROR: Contiene carácteres invalidos.');
+                    texto.value = '';
+                    return true
+                }
+            }
+        }
+        function cleanChar(char) {
+            char = char.toLowerCase();
+            if ('áàâä'.includes(char)) return 'a';
+            if ('éèêë'.includes(char)) return 'e';
+            if ('íìîï'.includes(char)) return 'i';
+            if ('óòôö'.includes(char)) return 'o';
+            if ('úùûü'.includes(char)) return 'u';
+            return char;
+        }
+        
+        //INICIO ---------------------------------------|
+        //PANTALLA INICIAL
+        function pantallaInicial() {
+            espacios = 0;
+            usuario = INPUT_NAME.value
+            
+            if (ifCharProhibidos(INPUT_NAME)) {
+                return;
+            }
+            
+            if (usuario == false) {
+                INPUT_NAME.style.backgroundColor = 'rgb(255, 0, 0, 0.2)';
+                INPUT_NAME.value = '';
+            } else {
+                PANTALLA_NAME.style.display = 'none';
+            }
+        }
+        function backgroundInputWhite() {
+            this.style.backgroundColor = 'white';
+        }
+        INPUT_NAME.onclick = backgroundInputWhite;
+        BOTON_INICIALIZAR.onclick = pantallaInicial;
+        
+        //PANTALLA DE FRASE OCULTA
+
+        function verContraseña() {
+            ver_contraseña = !ver_contraseña;
+
+            if (ver_contraseña) {
+                OJO_ABIERTO.style.display = 'initial';
+                INPUT_FRASE_OCULTA.type = 'text';
+                OJO_CERRADO.style.display = 'none';
+            } else {
+                OJO_ABIERTO.style.display = 'none';
+                INPUT_FRASE_OCULTA.type = 'password';
+                OJO_CERRADO.style.display = 'initial';
+            }
+        }
+
+        function pantallaFraseOculta() {
+            frase_oculta = INPUT_FRASE_OCULTA.value;
+            //comprobacion de la frase/palabra oculta sea valida
+            if (ifCharProhibidos(INPUT_FRASE_OCULTA)) {
+                return;
+            }
+            if (frase_oculta == false) {
+                INPUT_FRASE_OCULTA.style.backgroundColor = 'rgb(255, 0, 0, 0.2)';
+                INPUT_FRASE_OCULTA.value = '';
+            } else {
+                PANTALLA_FRASE_OCULTA.style.display = 'none';
+            }
+            //casillero
+            let celdas_salida = '';
+            for (let i = 0; i < frase_oculta.length; i++) {
+                let char = frase_oculta[i];
+                if (char == ' ') {
+                    celdas_salida += `<span>·</span>`;
+                    espacios++
+                } else {
+                    celdas_salida += `<span>-</span>`;
+                }
+            }
+            //asignar letras totales
+            total_letras = frase_oculta.length - espacios;
+
+            document.getElementById('box_palabra').innerHTML = celdas_salida;
+            colec_span = document.querySelectorAll('#box_palabra span');
+        }
+        OJO_ABIERTO.onclick = verContraseña;
+        OJO_CERRADO.onclick = verContraseña;
+        INPUT_FRASE_OCULTA.onclick = backgroundInputWhite;
+        BOTON_OCULTAR.onclick = pantallaFraseOculta;
+
+        //PANTALLA DE JUEGO DEL AHORCADO ---------------------------------------|
+
+        function comprobarLetra() {
+            let tiktak = 0;
+            let letra = this.value;
+            letra = letra.toLowerCase();
+
+            let frase_oculta_limpia = '';
+            for (const letra of frase_oculta) {
+                frase_oculta_limpia += cleanChar(letra);
+            }
+            frase_oculta_limpia = frase_oculta_limpia.toLowerCase()
+            
+            if (todas_las_letras.includes(letra)) {
+                alert(usuario + ' Ya has introducido esa letra')
+                this.value = '';
+                return
+            }
+
+            if (letra.length !== 1) {
+                alert(usuario + ' Solo puedes introducir una sola letra')
+                this.value = '';
+                return
+            }
+
+            if (frase_oculta_limpia.indexOf(letra) !== -1) {
+                for (let i = 0; i < frase_oculta_limpia.length; i++) {
+                    const letra_oculta = frase_oculta_limpia[i];
+                    if (letra_oculta == letra) {
+                        colec_span[i].textContent = frase_oculta[i];
+                        letras_encontradas += letra;
+                        num_encontradas++;
+                        restantes = total_letras - num_encontradas;
+                        tiktak = 1;
+                        if (num_encontradas == total_letras) {
+                            alert('Felicidades ' + usuario + ', Has Ganado el Juego!!');
+                            this.disabled = true;
+                        }
+                    }
+                }
+            } else {
+                letras_falladas += letra;
+                num_falladas++;
+                intentos_restantes--;
+                restantes = total_letras - num_encontradas;
+                tiktak = 2;
+                switch (num_falladas) {
+                    case 1:
+                        AHORCADO.src = 'imgs/fase2.png';
+                        break
+                    case 2:
+                        AHORCADO.src = 'imgs/fase3.png';
+                        break
+                    case 3:
+                        AHORCADO.src = 'imgs/fase4.png';
+                        break
+                    case 4:
+                        AHORCADO.src = 'imgs/fase5.png';
+                        break
+                    case 5:
+                        AHORCADO.src = 'imgs/fase6.png';
+                        break
+                    case 6:
+                        AHORCADO.src = 'imgs/fase7.png';
+                        alert('Una Lástima ' + usuario + ' :( , Has Perdido!!')
+                        this.disabled = true;
+                        break
+                }
+            }
+
+            if (tiktak == 1) {
+                TABLA.innerHTML += `<tr> <td>${letra}</td> <td>''</td> <td>${restantes}</td> <td>${intentos_restantes}</td> </tr>`;
+            } else if (tiktak == 2) {
+                TABLA.innerHTML += `<tr> <td>''</td> <td>${letra}</td> <td>${restantes}</td> <td>${intentos_restantes}</td> </tr>`;
+            }
+
+            this.value = '';
+            todas_las_letras = letras_encontradas + letras_falladas;
+            tiktak = 0;
+        }
+        INPUT_LETRA.onchange = comprobarLetra;
+
+        //FUNCION PARA REINICIAR EL JUEGO
+        function reiniciar() {
+            AHORCADO.src = 'imgs/fase1.png'
+            INPUT_NAME.value = '';
+            PANTALLA_NAME.style.display = 'flex';
+            PANTALLA_FRASE_OCULTA.style.display = 'flex';
+            INPUT_FRASE_OCULTA.value = '';
+            INPUT_LETRA.value = '';
+            TABLA.innerHTML = '';
+            INPUT_LETRA.disabled = false
+
+            ver_contraseña = false;
+            colec_span = '';
+            todas_las_letras = '';
+            usuario = '';
+            frase_oculta = '';
+            letras_encontradas = '';
+            letras_falladas = '';
+            num_encontradas = 0;
+            num_falladas = 0;
+            intentos_restantes = 6;
+            espacios = 0;
+            total_letras = 0;
+            restantes = 0;
+        }
+        reiniciar();
+        BOTON_REINICIAR.onclick = reiniciar;
+    </script>
+</body>
+
+</html>

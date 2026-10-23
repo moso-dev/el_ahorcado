@@ -25,8 +25,6 @@
             <label for="in_frase_oculta">Escribe Aquí: </label>
             <div class="box_password">
                 <input type="password" id="in_frase_oculta">
-                <span class="fa-regular fa-eye-slash" id="ojo_cerrado"></span>
-                <span class="fa-regular fa-eye" id="ojo_abierto"></span>
             </div>
             <button id="btn_ocultar" class="btn-iniciales">Ocultar</button>
         </div>
@@ -79,10 +77,8 @@
         const INPUT_LETRA = document.getElementById('in_letra');
         const TABLA = document.getElementById('cuerpo_tabla');
         const BOTON_REINICIAR = document.getElementById('btn_reiniciar');
-        const OJO_CERRADO = document.getElementById('ojo_cerrado');
-        const OJO_ABIERTO = document.getElementById('ojo_abierto');
 
-        let ver_contraseña = false;
+
         let colec_span;
         let todas_las_letras = '';
         let usuario = '';
@@ -141,20 +137,6 @@
         
         //PANTALLA DE FRASE OCULTA
 
-        function verContraseña() {
-            ver_contraseña = !ver_contraseña;
-
-            if (ver_contraseña) {
-                OJO_ABIERTO.style.display = 'initial';
-                INPUT_FRASE_OCULTA.type = 'text';
-                OJO_CERRADO.style.display = 'none';
-            } else {
-                OJO_ABIERTO.style.display = 'none';
-                INPUT_FRASE_OCULTA.type = 'password';
-                OJO_CERRADO.style.display = 'initial';
-            }
-        }
-
         function pantallaFraseOculta() {
             frase_oculta = INPUT_FRASE_OCULTA.value;
             //comprobacion de la frase/palabra oculta sea valida
@@ -184,8 +166,7 @@
             document.getElementById('box_palabra').innerHTML = celdas_salida;
             colec_span = document.querySelectorAll('#box_palabra span');
         }
-        OJO_ABIERTO.onclick = verContraseña;
-        OJO_CERRADO.onclick = verContraseña;
+
         INPUT_FRASE_OCULTA.onclick = backgroundInputWhite;
         BOTON_OCULTAR.onclick = pantallaFraseOculta;
 
